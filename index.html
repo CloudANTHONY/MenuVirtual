@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f52a23">
+    <meta name="color-scheme" content="light">
+    <title>¡Qué Antojo! | 12°B Ciencias</title>
+    <link rel="preload" href="assets/logo.png" as="image">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="ruido"></div>
+
+    <header class="barra" id="barra">
+        <a class="marca" href="#inicio" aria-label="Ir al inicio">
+            <img src="assets/logo.png" alt="¡Qué Antojo!">
+            <span>¡Qué Antojo!</span>
+        </a>
+
+        <button class="menu-boton" id="menuBoton" aria-label="Abrir navegación" aria-expanded="false">
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav class="navegacion" id="navegacion">
+            <a href="#inicio">Inicio</a>
+            <a href="#menu">Menú</a>
+            <a href="#evento">Evento</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero" id="inicio">
+            <div class="hero-manchas" aria-hidden="true">
+                <span class="mancha mancha-roja"></span>
+                <span class="mancha mancha-amarilla"></span>
+                <span class="mancha mancha-verde"></span>
+            </div>
+
+            <div class="hero-contenido">
+                <div class="hero-etiqueta revelar">
+                    <span></span>
+                    12°B Ciencias
+                </div>
+
+                <h1 class="revelar">
+                    No lo pienses.
+                    <strong>Come.</strong>
+                </h1>
+
+                <p class="hero-texto revelar">
+                    Tres antojos, precios pequeños y cero excusas.
+                </p>
+
+                <div class="hero-acciones revelar">
+                    <a class="boton boton-primario" href="#menu">
+                        Ver el menú
+                        <span>↓</span>
+                    </a>
+
+                    <a class="boton boton-claro" href="#evento">
+                        Sobre el evento
+                    </a>
+                </div>
+
+                <div class="hero-precios revelar">
+                    <span>Desde</span>
+                    <strong>$0.75</strong>
+                </div>
+            </div>
+
+            <div class="hero-visual revelar" aria-hidden="true">
+                <div class="hero-disco"></div>
+                <img class="hero-producto hero-dorilocos" src="assets/dorilocos.png" alt="">
+                <img class="hero-logo" src="assets/logo.png" alt="">
+                <span class="hero-sello">
+                    <strong>3</strong>
+                    productos
+                </span>
+            </div>
+
+            <a class="deslizar" href="#menu" aria-label="Ir al menú">
+                <span></span>
+            </a>
+        </section>
+
+        <section class="menu-seccion" id="menu">
+            <div class="seccion-cabeza revelar">
+                <div>
+                    <p class="mini-titulo">El menú</p>
+                    <h2>¿Qué se te antoja?</h2>
+                </div>
+
+                <p class="seccion-descripcion">
+                    Toca cualquier producto para verlo con más detalle.
+                </p>
+            </div>
+
+            <div class="productos" id="productos"></div>
+        </section>
+
+        <section class="evento" id="evento">
+            <div class="evento-tarjeta revelar">
+                <div class="evento-logo">
+                    <img src="assets/logo.png" alt="Logo de ¡Qué Antojo!">
+                </div>
+
+                <div class="evento-contenido">
+                    <p class="mini-titulo">12°B Ciencias</p>
+                    <h2>Comida para disfrutar el evento.</h2>
+                    <p>
+                        Nuestro menú está pensado para que puedas elegir rápido, comprar fácil y seguir disfrutando.
+                    </p>
+
+                    <div class="evento-datos">
+                        <div>
+                            <span>Productos</span>
+                            <strong>3</strong>
+                        </div>
+                        <div>
+                            <span>Precio desde</span>
+                            <strong>$0.75</strong>
+                        </div>
+                        <div>
+                            <span>Estado</span>
+                            <strong>Activo</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="pie">
+        <a href="#inicio">¡Qué Antojo!</a>
+        <span>12°B Ciencias</span>
+        <span id="anio"></span>
+    </footer>
+
+    <div class="modal" id="modal" aria-hidden="true">
+        <button class="modal-fondo" id="modalFondo" aria-label="Cerrar"></button>
+
+        <article class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalNombre">
+            <button class="modal-cerrar" id="modalCerrar" aria-label="Cerrar detalle">×</button>
+
+            <div class="modal-imagen">
+                <div class="modal-color" id="modalColor"></div>
+                <img id="modalImagen" src="" alt="">
+            </div>
+
+            <div class="modal-contenido">
+                <div class="modal-superior">
+                    <span class="estado" id="modalEstado"></span>
+                    <span class="modal-precio" id="modalPrecio"></span>
+                </div>
+
+                <h3 id="modalNombre"></h3>
+                <p id="modalDescripcion"></p>
+
+                <button class="boton boton-primario modal-accion" id="modalAccion" type="button">
+                    Lo quiero
+                    <span>→</span>
+                </button>
+            </div>
+        </article>
+    </div>
+
+    <nav class="barra-movil" aria-label="Navegación rápida">
+        <a href="#inicio">
+            <span class="icono">⌂</span>
+            <span>Inicio</span>
+        </a>
+        <a href="#menu">
+            <span class="icono">◫</span>
+            <span>Menú</span>
+        </a>
+        <a href="#evento">
+            <span class="icono">●</span>
+            <span>Evento</span>
+        </a>
+    </nav>
+
+    <script src="productos.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
