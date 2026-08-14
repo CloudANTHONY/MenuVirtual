@@ -1,3 +1,4 @@
+console.info("¡Qué Antojo! build ONLINE 2026-08-13.1");
 const productosContenedor = document.getElementById("productos");
 const combosContenedor = document.getElementById("combosLista");
 const promocionesContenedor = document.getElementById("promocionesLista");
