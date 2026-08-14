@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#17110c">
+    <title>Staff | ¡Qué Antojo!</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="staff.css">
+</head>
+<body class="staff-body">
+    <section class="staff-acceso" id="staffAcceso">
+        <div class="staff-acceso-tarjeta">
+            <img src="assets/logo.png" alt="¡Qué Antojo!">
+            <span>Panel privado</span>
+            <h1 id="staffAccesoTitulo">Verificando acceso…</h1>
+            <p id="staffAccesoTexto">Este panel solo funciona desde el enlace privado del staff.</p>
+            <div class="staff-login-error" id="staffAccesoError" hidden></div>
+            <a class="staff-volver-menu" href="index.html">Volver al menú</a>
+        </div>
+    </section>
+
+    <div id="staffApp" hidden>
+        <header class="staff-barra">
+            <a class="staff-marca" href="index.html">
+                <img src="assets/logo.png" alt="¡Qué Antojo!">
+                <div><span>Staff</span><strong>Delivery</strong></div>
+            </a>
+            <div class="staff-barra-acciones">
+                <div class="staff-senal" id="staffSenal"><span></span>Conectando</div>
+                <button class="staff-salir" id="staffSalir" type="button">Salir</button>
+            </div>
+        </header>
+
+        <main class="staff-main">
+            <section class="staff-hero">
+                <div>
+                    <p>Panel del puesto</p>
+                    <h1>Pedidos en movimiento.</h1>
+                </div>
+                <div class="staff-contadores">
+                    <div><span>Pendientes</span><strong id="contadorPendientes">0</strong></div>
+                    <div><span>Activos</span><strong id="contadorActivos">0</strong></div>
+                    <div><span>Finalizados</span><strong id="contadorFinalizados">0</strong></div>
+                </div>
+            </section>
+
+            <section class="staff-control-delivery">
+                <div>
+                    <span>Pedidos online</span>
+                    <strong id="staffDeliveryTexto">Consultando…</strong>
+                </div>
+                <button id="staffDeliveryToggle" type="button" disabled>Cambiar estado</button>
+            </section>
+
+            <section class="staff-layout">
+                <div class="staff-lista-area">
+                    <div class="staff-seccion-cabeza">
+                        <div><span>Cola</span><h2>Pedidos</h2></div>
+                        <button id="staffLimpiar" type="button">Vaciar pedidos</button>
+                    </div>
+                    <div class="staff-pedidos" id="staffPedidos"></div>
+                </div>
+
+                <aside class="staff-detalle" id="staffDetalle">
+                    <div class="staff-vacio">
+                        <span>↗</span>
+                        <h2>Selecciona un pedido</h2>
+                        <p>Aquí podrás asignar repartidor y actualizar el estado.</p>
+                    </div>
+                </aside>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="productos.js"></script>
+    <script src="pedidos-store.js"></script>
+    <script src="staff.js"></script>
+</body>
+</html>

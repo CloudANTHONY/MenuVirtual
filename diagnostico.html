@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Diagnóstico | ¡Qué Antojo!</title>
+    <style>
+        *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#17110c;color:#fff;font-family:Arial,sans-serif}.box{width:min(520px,100%);padding:28px;border:1px solid #ffffff1a;border-radius:24px;background:#ffffff0d}.box h1{margin:0;font-size:2rem}.box p{color:#ffffff99;line-height:1.6}.estado{margin-top:22px;padding:15px;border-radius:14px;background:#ffffff0d}.ok{background:#73b72b22;color:#cdeeba}.error{background:#f52a2322;color:#ffd2cf}button{width:100%;min-height:48px;margin-top:18px;border:0;border-radius:14px;background:#ffd51f;font-weight:800;cursor:pointer}</style>
+</head>
+<body>
+    <main class="box">
+        <h1>Diagnóstico</h1>
+        <p>Comprueba que GitHub Pages puede hablar con la base de datos antes del evento.</p>
+        <div class="estado" id="estado">Esperando prueba.</div>
+        <button id="probar">Probar conexión</button>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="pedidos-store.js"></script>
+    <script>
+        const estado = document.getElementById("estado");
+        const probar = document.getElementById("probar");
+        const ejecutar = async () => {
+            probar.disabled = true;
+            estado.className = "estado";
+            estado.textContent = "Conectando…";
+            try {
+                if (!PedidosStore.configurado()) throw new Error("Falta configurar supabase-config.js");
+                const data = await PedidosStore.salud();
+                estado.className = "estado ok";
+                estado.textContent = `Conexión correcta. Delivery: ${data.delivery ? "abierto" : "pausado"}.`;
+            } catch (error) {
+                estado.className = "estado error";
+                estado.textContent = `Error: ${error.message || "No se pudo conectar"}`;
+            } finally {
+                probar.disabled = false;
+            }
+        };
+        probar.addEventListener("click", ejecutar);
+        ejecutar();
+    </script>
+</body>
+</html>
