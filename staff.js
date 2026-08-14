@@ -20,6 +20,7 @@ let pedidosActuales = [];
 let cargandoPedidos = false;
 let cancelarSuscripcion = null;
 let deliveryActivoActual = null;
+let accionEnCurso = false;
 
 const formatoPrecio = valor => `$${Number(valor || 0).toFixed(2)}`;
 const estadoNombre = estado => PedidosStore.estados.find(item => item.id === estado)?.nombre || (estado === "cancelado" ? "Cancelado" : estado);
@@ -46,12 +47,12 @@ const renderContadores = pedidos => {
     contadorFinalizados.textContent = pedidos.filter(pedido => esFinal(pedido.estado)).length;
 };
 
-const renderLista = () => {
+const renderLista = (actualizarDetalle = true) => {
     renderContadores(pedidosActuales);
 
     if (!pedidosActuales.length) {
         staffPedidos.innerHTML = `<div class="staff-sin-pedidos"><span>0</span><strong>No hay pedidos todavía</strong><p>Cuando un cliente envíe uno aparecerá aquí.</p></div>`;
-        renderDetalle();
+        if (actualizarDetalle) renderDetalle();
         return;
     }
 
@@ -72,11 +73,11 @@ const renderLista = () => {
 
     staffPedidos.querySelectorAll("[data-pedido]").forEach(boton => boton.addEventListener("click", () => {
         pedidoSeleccionado = boton.dataset.pedido;
-        renderLista();
+        renderLista(false);
         renderDetalle();
     }));
 
-    renderDetalle();
+    if (actualizarDetalle) renderDetalle();
 };
 
 const renderDetalle = () => {
@@ -137,12 +138,17 @@ const renderDetalle = () => {
         const boton = formulario.querySelector("button");
         boton.disabled = true;
         boton.textContent = "Asignando…";
+        accionEnCurso = true;
         try {
-            await PedidosStore.actualizar(pedido.id, { repartidor: nombre, estado: "aceptado" });
-            await cargarPedidos();
-        } catch {
+            await PedidosStore.tomarPedido(pedido.id, nombre);
+            await cargarPedidos(true);
+        } catch (error) {
+            console.error("[Qué Antojo] No se pudo tomar el pedido", error);
             boton.disabled = false;
             boton.textContent = "Reintentar";
+            alert(`No se pudo tomar el pedido. ${error?.message || "Revisa la conexión."}`);
+        } finally {
+            accionEnCurso = false;
         }
     });
 
@@ -150,11 +156,16 @@ const renderDetalle = () => {
         const estado = boton.dataset.estado;
         if (!pedido.repartidor) return;
         boton.disabled = true;
+        accionEnCurso = true;
         try {
-            await PedidosStore.actualizar(pedido.id, { estado });
-            await cargarPedidos();
-        } catch {
+            await PedidosStore.cambiarEstadoPedido(pedido.id, estado);
+            await cargarPedidos(true);
+        } catch (error) {
+            console.error("[Qué Antojo] No se pudo cambiar el estado", error);
             boton.disabled = false;
+            alert(`No se pudo cambiar el estado. ${error?.message || "Revisa la conexión."}`);
+        } finally {
+            accionEnCurso = false;
         }
     }));
 };
@@ -172,13 +183,14 @@ const cargarDelivery = async () => {
     }
 };
 
-const cargarPedidos = async () => {
+const cargarPedidos = async (forzarDetalle = false) => {
     if (cargandoPedidos) return;
     cargandoPedidos = true;
     try {
+        const editandoRepartidor = document.activeElement?.id === "staffRepartidor";
         pedidosActuales = await PedidosStore.listar();
         mostrarConexion(true);
-        renderLista();
+        renderLista(forzarDetalle || (!editandoRepartidor && !accionEnCurso));
     } catch (error) {
         mostrarConexion(false);
         if (String(error?.message || "").includes("STAFF_NO_AUTORIZADO")) cerrarPanel();

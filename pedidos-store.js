@@ -220,22 +220,57 @@ const PedidosStore = (() => {
         });
     };
 
-    const actualizar = async (codigo, cambios) => {
+    const errorRpc = (nombre, error) => {
+        console.error(`[Qué Antojo] ${nombre}`, {
+            code: error?.code,
+            message: error?.message,
+            details: error?.details,
+            hint: error?.hint
+        });
+        const mensaje = [error?.message, error?.details, error?.hint].filter(Boolean).join(" · ");
+        const fallo = new Error(mensaje || "No se pudo actualizar el pedido");
+        fallo.code = error?.code;
+        return fallo;
+    };
+
+    const tomarPedido = async (codigo, repartidor) => {
         const api = supabase();
         const token = requiereStaff();
-        const estado = typeof cambios.estado === "string" ? cambios.estado : null;
-        const repartidor = typeof cambios.repartidor === "string" ? cambios.repartidor.trim() : null;
+        const nombre = String(repartidor || "").trim();
+        if (nombre.length < 2) throw new Error("Escribe el nombre del repartidor");
 
         return ejecutar(async () => {
-            const { data, error } = await api.rpc("staff_actualizar_pedido", {
+            const { data, error } = await api.rpc("staff_tomar_pedido_v2", {
                 p_staff_token: token,
                 p_codigo: codigo,
-                p_estado: estado,
-                p_repartidor: repartidor
+                p_repartidor: nombre
             });
-            if (error) throw error;
+            if (error) throw errorRpc("staff_tomar_pedido_v2", error);
             return normalizar(filas(data)[0] || null, false);
         });
+    };
+
+    const cambiarEstadoPedido = async (codigo, estado) => {
+        const api = supabase();
+        const token = requiereStaff();
+        const nuevoEstado = String(estado || "").trim();
+
+        return ejecutar(async () => {
+            const { data, error } = await api.rpc("staff_cambiar_estado_pedido_v2", {
+                p_staff_token: token,
+                p_codigo: codigo,
+                p_estado: nuevoEstado
+            });
+            if (error) throw errorRpc("staff_cambiar_estado_pedido_v2", error);
+            return normalizar(filas(data)[0] || null, false);
+        });
+    };
+
+    const actualizar = async (codigo, cambios) => {
+        const tieneRepartidor = typeof cambios?.repartidor === "string" && cambios.repartidor.trim();
+        if (tieneRepartidor) return tomarPedido(codigo, cambios.repartidor);
+        if (typeof cambios?.estado === "string") return cambiarEstadoPedido(codigo, cambios.estado);
+        throw new Error("ACTUALIZACION_VACIA");
     };
 
     const limpiar = async () => {
@@ -344,6 +379,8 @@ const PedidosStore = (() => {
         validarStaff,
         listar,
         actualizar,
+        tomarPedido,
+        cambiarEstadoPedido,
         limpiar,
         olvidar,
         deliveryActivo,
