@@ -1,4 +1,4 @@
-console.info("¡Qué Antojo! build ONLINE 2026-08-13.1");
+console.info("¡Qué Antojo! build ONLINE 2026-08-13.4");
 const productosContenedor = document.getElementById("productos");
 const combosContenedor = document.getElementById("combosLista");
 const promocionesContenedor = document.getElementById("promocionesLista");
@@ -23,6 +23,11 @@ const deliveryCerrar = document.getElementById("deliveryCerrar");
 const deliveryFormulario = document.getElementById("deliveryFormulario");
 const deliveryProductos = document.getElementById("deliveryProductos");
 const deliveryTotal = document.getElementById("deliveryTotal");
+const deliverySubtotal = document.getElementById("deliverySubtotal");
+const deliveryTarifa = document.getElementById("deliveryTarifa");
+const deliveryTotalDetalle = document.getElementById("deliveryTotalDetalle");
+const deliveryPausa = document.getElementById("deliveryPausa");
+const deliveryYappyRegla = document.getElementById("deliveryYappyRegla");
 const deliverySeguimiento = document.getElementById("deliverySeguimiento");
 const deliverySubtitulo = document.getElementById("deliverySubtitulo");
 const deliveryFinalizar = document.getElementById("deliveryFinalizar");
@@ -34,6 +39,7 @@ const seguimientoResumen = document.getElementById("seguimientoResumen");
 const seguimientoFinal = document.getElementById("seguimientoFinal");
 const seguimientoEspera = document.getElementById("seguimientoEspera");
 const seguimientoConexion = document.getElementById("seguimientoConexion");
+const seguimientoPagoAviso = document.getElementById("seguimientoPagoAviso");
 const deliveryEnviar = document.getElementById("deliveryEnviar");
 
 const claseEstado = {
@@ -157,7 +163,7 @@ const crearPromocion = (promocion, indice) => {
     tarjeta.innerHTML = `
         <div class="promo-frente">
             <span class="promo-numero">${promocion.numero}</span>
-            <span class="promo-puesto">Solo en el puesto</span>
+            <span class="promo-puesto">${promocion.ambito || "Solo en el puesto"}</span>
             <div class="promo-titulo"><p>Promoción</p><h3>${promocion.titulo}</h3></div>
             <p class="promo-resumen">${promocion.resumen}</p>
             ${niveles}
@@ -191,10 +197,25 @@ let pedidoActivoActual = pedidoActivoId ? PedidosStore.obtenerCache(pedidoActivo
 let enviandoPedido = false;
 let productoSeleccionado = null;
 
-const calcularDelivery = () => catalogoDelivery().reduce((total, item) => total + item.precio * (cantidadesDelivery[item.id] || 0), 0);
+const calcularSubtotalDelivery = () => catalogoDelivery().reduce((total, item) => total + item.precio * (cantidadesDelivery[item.id] || 0), 0);
+
+const calcularTarifaDelivery = subtotal => {
+    const valor = Number(subtotal || 0);
+    if (valor <= 0) return 0;
+    if (valor < 3) return 1.25;
+    if (valor < 5) return 1.00;
+    if (valor < 7) return 0.75;
+    return 0.50;
+};
 
 const actualizarDeliveryTotal = () => {
-    deliveryTotal.textContent = formatoPrecio(calcularDelivery());
+    const subtotal = calcularSubtotalDelivery();
+    const tarifa = calcularTarifaDelivery(subtotal);
+    const total = subtotal + tarifa;
+    deliveryTotal.textContent = formatoPrecio(total);
+    deliverySubtotal.textContent = formatoPrecio(subtotal);
+    deliveryTarifa.textContent = formatoPrecio(tarifa);
+    deliveryTotalDetalle.textContent = formatoPrecio(total);
     deliveryProductos.querySelectorAll("[data-cantidad]").forEach(elemento => {
         elemento.textContent = cantidadesDelivery[elemento.dataset.cantidad] || 0;
     });
@@ -238,6 +259,11 @@ const abrirDelivery = async (item = null, tipo = "producto") => {
         return;
     }
 
+    deliveryPausa.hidden = true;
+    deliveryFormulario.hidden = true;
+    deliverySeguimiento.hidden = true;
+    deliveryCerrar.hidden = false;
+
     if (!PedidosStore.configurado()) {
         deliverySubtitulo.textContent = "El sistema online todavía no está configurado.";
         delivery.classList.add("activo");
@@ -249,7 +275,8 @@ const abrirDelivery = async (item = null, tipo = "producto") => {
     try {
         const activo = await PedidosStore.deliveryActivo();
         if (!activo) {
-            deliverySubtitulo.textContent = "Los pedidos por delivery están pausados por el momento.";
+            deliverySubtitulo.textContent = "No estamos aceptando pedido actualmente.";
+            deliveryPausa.hidden = false;
             delivery.classList.add("activo");
             delivery.setAttribute("aria-hidden", "false");
             document.body.classList.add("sin-scroll");
@@ -257,6 +284,7 @@ const abrirDelivery = async (item = null, tipo = "producto") => {
         }
     } catch {
         deliverySubtitulo.textContent = "No pudimos confirmar el estado del delivery. Revisa tu conexión e inténtalo de nuevo.";
+        deliveryPausa.hidden = false;
         delivery.classList.add("activo");
         delivery.setAttribute("aria-hidden", "false");
         document.body.classList.add("sin-scroll");
@@ -266,6 +294,7 @@ const abrirDelivery = async (item = null, tipo = "producto") => {
     cantidadesDelivery = {};
     if (item) cantidadesDelivery[item.id] = 1;
     renderDeliveryProductos();
+    deliveryPausa.hidden = true;
     deliveryFormulario.hidden = false;
     deliverySeguimiento.hidden = true;
     deliveryCerrar.hidden = false;
@@ -274,7 +303,6 @@ const abrirDelivery = async (item = null, tipo = "producto") => {
     delivery.setAttribute("aria-hidden", "false");
     document.body.classList.add("sin-scroll");
 };
-
 const cerrarDelivery = () => {
     if (pedidoActivoId) return;
     delivery.classList.remove("activo");
@@ -301,13 +329,27 @@ const renderSeguimiento = pedido => {
     }).join("");
 
     seguimientoRepartidor.innerHTML = `<span>Repartidor</span><strong>${escapar(pedido.repartidor || "Esperando asignación…")}</strong>`;
+    const descuentoTexto = pedido.descuento > 0
+        ? `<div><span>Descuento${pedido.descuentoPct ? ` (${pedido.descuentoPct}%)` : ""}</span><strong>−${formatoPrecio(pedido.descuento)}</strong></div>`
+        : "";
     seguimientoResumen.innerHTML = `
         <div><span>Destino</span><strong>${escapar(pedido.salon)} · ${escapar(pedido.bachiller)}</strong></div>
         <div><span>Pago</span><strong>${escapar(pedido.pago)}</strong></div>
-        <div><span>Total</span><strong>${formatoPrecio(pedido.total)}</strong></div>
+        <div><span>Subtotal</span><strong>${formatoPrecio(pedido.subtotal)}</strong></div>
+        <div><span>Delivery</span><strong>${formatoPrecio(pedido.deliveryFee)}</strong></div>
+        ${descuentoTexto}
+        <div><span>Total final</span><strong>${formatoPrecio(pedido.total)}</strong></div>
         <div class="seguimiento-resumen-items"><span>Pedido</span><strong>${pedido.items.map(item => `${Number(item.cantidad)}× ${escapar(item.nombre)}`).join(" · ")}</strong></div>
         ${pedido.nota ? `<div class="seguimiento-resumen-items"><span>Detalles</span><strong>${escapar(pedido.nota)}</strong></div>` : ""}
     `;
+
+    if (pedido.pago === "Yappy") {
+        seguimientoPagoAviso.hidden = false;
+        seguimientoPagoAviso.innerHTML = `<strong>Yappy: 6537-4834</strong><p>No envíes el pago hasta que llegue el repartidor. Primero se verifican promociones y el total final; después realiza el Yappy y espera a que el personal confirme que la transacción fue exitosa.</p>`;
+    } else {
+        seguimientoPagoAviso.hidden = true;
+        seguimientoPagoAviso.innerHTML = "";
+    }
 
     const finalizado = pedido.estado === "entregado" || pedido.estado === "cancelado";
     seguimientoEspera.hidden = finalizado;
@@ -329,6 +371,7 @@ const abrirSeguimiento = async id => {
         pedidoActivoId = id;
         pedidoActivoActual = cache;
         localStorage.setItem("queantojo_pedido_activo", id);
+        deliveryPausa.hidden = true;
         deliveryFormulario.hidden = true;
         deliverySeguimiento.hidden = false;
         delivery.classList.add("activo");
@@ -348,6 +391,7 @@ const abrirSeguimiento = async id => {
             pedidoActivoId = id;
             pedidoActivoActual = pedido;
             localStorage.setItem("queantojo_pedido_activo", id);
+            deliveryPausa.hidden = true;
             deliveryFormulario.hidden = true;
             deliverySeguimiento.hidden = false;
             delivery.classList.add("activo");
@@ -357,6 +401,7 @@ const abrirSeguimiento = async id => {
         }
     } catch {
         if (!cache) {
+            deliveryPausa.hidden = true;
             deliveryFormulario.hidden = true;
             deliverySeguimiento.hidden = false;
             delivery.classList.add("activo");
@@ -465,6 +510,14 @@ modalAccion.addEventListener("click", () => {
 deliveryFondo.addEventListener("click", cerrarDelivery);
 deliveryCerrar.addEventListener("click", cerrarDelivery);
 
+const actualizarAvisoYappy = () => {
+    const seleccionado = deliveryFormulario.querySelector('input[name="pago"]:checked')?.value || "Efectivo";
+    deliveryYappyRegla.hidden = seleccionado !== "Yappy";
+};
+
+deliveryFormulario.querySelectorAll('input[name="pago"]').forEach(input => input.addEventListener("change", actualizarAvisoYappy));
+actualizarAvisoYappy();
+
 deliveryFormulario.addEventListener("submit", async evento => {
     evento.preventDefault();
     if (enviandoPedido) return;
@@ -498,7 +551,9 @@ deliveryFormulario.addEventListener("submit", async evento => {
     } catch (error) {
         const mensaje = String(error?.message || "");
         if (mensaje.includes("DELIVERY_CERRADO")) {
-            deliverySubtitulo.textContent = "El staff pausó temporalmente los pedidos por delivery.";
+            deliverySubtitulo.textContent = "No estamos aceptando pedido actualmente.";
+            deliveryFormulario.hidden = true;
+            deliveryPausa.hidden = false;
         } else {
             deliverySubtitulo.textContent = "No pudimos enviar el pedido. Revisa tu Internet e inténtalo otra vez.";
         }

@@ -3309,3 +3309,155 @@ img {
     opacity: 0.58;
     cursor: wait;
 }
+
+.delivery-pausa {
+    margin: 22px 18px calc(30px + env(safe-area-inset-bottom));
+    padding: 24px 20px;
+    border: 1px solid rgba(245, 42, 35, 0.18);
+    border-radius: 20px;
+    background: #fff1ef;
+}
+
+.delivery-pausa[hidden],
+.delivery-yappy-regla[hidden],
+.seguimiento-pago-aviso[hidden] {
+    display: none;
+}
+
+.delivery-pausa > span {
+    color: var(--rojo);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.delivery-pausa > strong {
+    display: block;
+    margin-top: 7px;
+    color: var(--tinta);
+    font-size: 1.2rem;
+}
+
+.delivery-pausa > p {
+    margin-top: 8px;
+    color: var(--gris);
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+.delivery-costos {
+    margin-top: 14px;
+    padding: 14px 15px;
+    display: grid;
+    gap: 8px;
+    border-radius: 17px;
+    background: #f5f0e7;
+}
+
+.delivery-costos > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.delivery-costos > div span {
+    color: var(--gris);
+    font-size: 0.73rem;
+    font-weight: 800;
+}
+
+.delivery-costos > div strong {
+    color: var(--tinta);
+    font-size: 0.86rem;
+}
+
+.delivery-costos .delivery-costos-total {
+    padding-top: 8px;
+    border-top: 1px solid rgba(23, 17, 12, 0.1);
+}
+
+.delivery-costos .delivery-costos-total strong {
+    font-size: 1.05rem;
+}
+
+.delivery-costos > p {
+    color: #776d64;
+    font-size: 0.67rem;
+    line-height: 1.5;
+}
+
+.delivery-promos-info {
+    margin-top: 22px;
+    padding: 16px;
+    display: grid;
+    gap: 7px;
+    border: 1px solid rgba(255, 213, 31, 0.4);
+    border-radius: 18px;
+    background: #fff7d8;
+}
+
+.delivery-promos-info > strong {
+    font-size: 0.9rem;
+}
+
+.delivery-promos-info > p {
+    color: #4f463d;
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.delivery-promos-info > small {
+    color: #776d64;
+    font-size: 0.67rem;
+    line-height: 1.45;
+}
+
+.delivery-yappy-regla,
+.seguimiento-pago-aviso,
+.seguimiento-promo-recordatorio,
+.seguimiento-reclamo {
+    margin-top: 14px;
+    padding: 15px 16px;
+    border-radius: 17px;
+}
+
+.delivery-yappy-regla,
+.seguimiento-pago-aviso {
+    color: #123b50;
+    background: #dff4ff;
+}
+
+.delivery-yappy-regla strong,
+.seguimiento-pago-aviso strong,
+.seguimiento-promo-recordatorio strong,
+.seguimiento-reclamo strong {
+    display: block;
+    font-size: 0.84rem;
+}
+
+.delivery-yappy-regla p,
+.seguimiento-pago-aviso p,
+.seguimiento-promo-recordatorio p,
+.seguimiento-reclamo p {
+    margin-top: 5px;
+    font-size: 0.73rem;
+    line-height: 1.5;
+}
+
+.seguimiento-promo-recordatorio {
+    color: #5e4600;
+    background: #fff1b8;
+}
+
+.seguimiento-reclamo {
+    color: #514840;
+    background: #f2ede5;
+}
+
+@media (min-width: 720px) {
+    .delivery-pausa {
+        margin: 30px 42px 38px;
+    }
+}

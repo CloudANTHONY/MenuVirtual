@@ -91,6 +91,7 @@ const promociones = [
         titulo: "Ven con la banda",
         resumen: "Llega con 3 amigos, compren juntos y conviertan la visita en un Doriloco gratis.",
         premio: "1 Doriloco GRATIS",
+        ambito: "Solo en el puesto",
         condiciones: [
             "Deben estar presentes las 4 personas en el puesto.",
             "Cada integrante del grupo debe realizar una compra mínima de $1.50.",
@@ -104,21 +105,22 @@ const promociones = [
         id: "promo-preguntas",
         numero: "02",
         titulo: "¿Te la sabes?",
-        resumen: "Responde correctamente una pregunta en el puesto y gana un descuento según la dificultad.",
-        premio: "Hasta 50% OFF",
+        resumen: "Responde correctamente una pregunta. En el puesto puedes ganar hasta 50%; por delivery también puedes intentarlo al recibir tu pedido.",
+        premio: "Puesto hasta 50% · Delivery hasta 15%",
+        ambito: "Puesto + Delivery",
         niveles: [
             { nombre: "Fácil", descuento: "10%" },
             { nombre: "Media", descuento: "25%" },
             { nombre: "Reto", descuento: "50%" }
         ],
         condiciones: [
-            "La pregunta y la respuesta se realizan únicamente en el puesto.",
-            "Las categorías pueden incluir cultura general, ciencia, Panamá, entretenimiento y curiosidades.",
+            "En el puesto: fácil 10%, media 25% y reto 50%.",
+            "En delivery: fácil 5%, media 10% y difícil 15%.",
+            "Si pediste delivery, indícale al repartidor que quieres intentar la pregunta antes de pagar.",
             "Una oportunidad por persona.",
             "Sin ayuda de internet ni de otras personas durante la respuesta.",
-            "El descuento se aplica a un solo producto individual.",
-            "No aplica sobre combos ni junto a otra promoción.",
-            "El cupón debe utilizarse el mismo día del evento."
+            "El descuento se valida por el personal antes de completar el pago.",
+            "No acumulable con otra promoción."
         ]
     },
     {
@@ -127,6 +129,7 @@ const promociones = [
         titulo: "Tempranero gana",
         resumen: "Haz tu compra entre 9:00 AM y 9:30 AM y llévate una soda por solo $0.50.",
         premio: "Soda a $0.50",
+        ambito: "Solo en el puesto",
         condiciones: [
             "Válida únicamente entre 9:00 AM y 9:30 AM.",
             "Debes comprar al menos un Doriloco, unos Nachos o cualquier combo.",
@@ -141,6 +144,7 @@ const promociones = [
         titulo: "Combo premiado",
         resumen: "Compra cualquier combo y recibe $0.25 de descuento adicional en una soda extra.",
         premio: "$0.25 OFF en soda extra",
+        ambito: "Solo en el puesto",
         condiciones: [
             "Debes comprar cualquier combo del menú.",
             "El descuento aplica únicamente a una soda adicional.",
@@ -155,12 +159,28 @@ const promociones = [
         titulo: "Selfie del antojo",
         resumen: "Tómate una foto en el puesto con tu compra y recibe un cupón de $0.25 para usar en el momento.",
         premio: "Cupón de $0.25",
+        ambito: "Solo en el puesto",
         condiciones: [
             "La foto debe tomarse en el puesto al momento de la compra.",
             "Debes mostrar la foto al personal para validar el cupón.",
             "El cupón se usa ese mismo día y en la misma jornada del evento.",
             "Aplica sobre una compra mínima de $1.50.",
             "No acumulable con la promoción de grupo ni con descuentos de preguntas."
+        ]
+    },
+    {
+        id: "promo-panfleto",
+        numero: "06",
+        titulo: "Trae el panfleto",
+        resumen: "Presenta el panfleto físico de promoción y recibe un 5% de descuento en tu compra.",
+        premio: "5% de descuento",
+        ambito: "Puesto + Delivery",
+        condiciones: [
+            "Debes presentar el panfleto físico al personal.",
+            "En delivery, muéstraselo al repartidor antes de realizar el pago.",
+            "El descuento se aplica al subtotal de comida; el costo de delivery no se descuenta.",
+            "Válido una vez por pedido.",
+            "No acumulable con otra promoción."
         ]
     }
 ];

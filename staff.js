@@ -25,6 +25,13 @@ let firmaDetalleActual = "";
 const borradoresRepartidor = new Map();
 
 const formatoPrecio = valor => `$${Number(valor || 0).toFixed(2)}`;
+const nombreDescuento = tipo => ({
+    ninguno: "Sin descuento",
+    panfleto: "Panfleto 5%",
+    pregunta_facil: "Pregunta fácil 5%",
+    pregunta_media: "Pregunta media 10%",
+    pregunta_dificil: "Pregunta difícil 15%"
+})[tipo] || "Sin descuento";
 const estadoNombre = estado => PedidosStore.estados.find(item => item.id === estado)?.nombre || (estado === "cancelado" ? "Cancelado" : estado);
 const esFinal = estado => estado === "entregado" || estado === "cancelado";
 const hora = valor => new Intl.DateTimeFormat("es-PA", { hour: "numeric", minute: "2-digit" }).format(new Date(valor));
@@ -55,6 +62,11 @@ const firmaPedido = pedido => pedido ? JSON.stringify({
     repartidor: pedido.repartidor,
     nota: pedido.nota,
     pago: pedido.pago,
+    subtotal: pedido.subtotal,
+    deliveryFee: pedido.deliveryFee,
+    descuentoTipo: pedido.descuentoTipo,
+    descuentoPct: pedido.descuentoPct,
+    descuento: pedido.descuento,
     total: pedido.total,
     actualizadoEn: pedido.actualizadoEn
 }) : "";
@@ -107,6 +119,29 @@ const renderDetalle = () => {
         ? `<div class="staff-repartidor-asignado"><span>Repartidor</span><strong>${escapar(pedido.repartidor)}</strong></div>`
         : `<form class="staff-repartidor-form" id="staffRepartidorForm"><label><span>Repartidor</span><input id="staffRepartidor" type="text" maxlength="50" required autocomplete="off" placeholder="Nombre de quien entregará"></label><button type="submit">Tomar pedido</button></form>`;
 
+    const promocionesDelivery = [
+        { id: "ninguno", nombre: "Sin descuento" },
+        { id: "panfleto", nombre: "Panfleto 5%" },
+        { id: "pregunta_facil", nombre: "Pregunta fácil 5%" },
+        { id: "pregunta_media", nombre: "Pregunta media 10%" },
+        { id: "pregunta_dificil", nombre: "Pregunta difícil 15%" }
+    ];
+
+    const controlesPromocion = esFinal(pedido.estado) ? `
+        <div class="staff-promo-aplicada">
+            <span>Promoción aplicada</span>
+            <strong>${escapar(nombreDescuento(pedido.descuentoTipo))}</strong>
+        </div>
+    ` : `
+        <div class="staff-promos-delivery">
+            <span>Descuento al entregar</span>
+            <p>Verifica el panfleto o la respuesta antes de aplicarlo. El descuento afecta la comida, no el costo de delivery.</p>
+            <div>
+                ${promocionesDelivery.map(promo => `<button type="button" data-promo="${promo.id}" ${!pedido.repartidor ? "disabled" : ""} class="${pedido.descuentoTipo === promo.id ? "activo" : ""}">${promo.nombre}</button>`).join("")}
+            </div>
+        </div>
+    `;
+
     const estados = PedidosStore.estados.filter(estado => estado.id !== "pendiente");
     const controles = esFinal(pedido.estado) ? "" : `
         <div class="staff-estados">
@@ -136,12 +171,18 @@ const renderDetalle = () => {
 
         ${pedido.nota ? `<div class="staff-nota"><span>Detalles</span><strong>${escapar(pedido.nota)}</strong></div>` : ""}
 
-        <div class="staff-total">
+        <div class="staff-total staff-total-detallado">
             <div><span>Método de pago</span><strong>${escapar(pedido.pago)}</strong></div>
-            <div><span>Total</span><strong>${formatoPrecio(pedido.total)}</strong></div>
+            <div><span>Subtotal</span><strong>${formatoPrecio(pedido.subtotal)}</strong></div>
+            <div><span>Delivery</span><strong>${formatoPrecio(pedido.deliveryFee)}</strong></div>
+            ${pedido.descuento > 0 ? `<div><span>Descuento ${pedido.descuentoPct}%</span><strong>−${formatoPrecio(pedido.descuento)}</strong></div>` : ""}
+            <div class="staff-total-final"><span>Total final</span><strong>${formatoPrecio(pedido.total)}</strong></div>
         </div>
 
+        ${pedido.pago === "Yappy" ? `<div class="staff-yappy"><strong>Yappy 6537-4834</strong><p>El cliente debe pagar cuando llegue el repartidor. Verifica el total final, la promoción si aplica y confirma que la transacción fue exitosa antes de marcar el pedido como entregado.</p></div>` : ""}
+
         ${bloqueAsignacion}
+        ${controlesPromocion}
         ${controles}
     `;
 
@@ -175,6 +216,23 @@ const renderDetalle = () => {
             accionEnCurso = false;
         }
     });
+
+    staffDetalle.querySelectorAll("[data-promo]").forEach(boton => boton.addEventListener("click", async () => {
+        if (!pedido.repartidor) return;
+        const tipo = boton.dataset.promo;
+        boton.disabled = true;
+        accionEnCurso = true;
+        try {
+            await PedidosStore.aplicarDescuento(pedido.id, tipo);
+            await cargarPedidos(true);
+        } catch (error) {
+            console.error("[Qué Antojo] No se pudo aplicar la promoción", error);
+            boton.disabled = false;
+            alert(`No se pudo aplicar la promoción. ${error?.message || "Revisa la conexión."}`);
+        } finally {
+            accionEnCurso = false;
+        }
+    }));
 
     staffDetalle.querySelectorAll("[data-estado]").forEach(boton => boton.addEventListener("click", async () => {
         const estado = boton.dataset.estado;
@@ -331,11 +389,16 @@ staffLimpiar.addEventListener("click", async () => {
     if (!confirm("¿Vaciar todos los pedidos? Hazlo solo antes de comenzar una nueva jornada.")) return;
     if (!confirm("Esta acción elimina también los pedidos finalizados. ¿Continuar?")) return;
     try {
-        await PedidosStore.limpiar();
+        const resultado = await PedidosStore.limpiar();
         pedidoSeleccionado = "";
-        await cargarPedidos();
-    } catch {
-        alert("No se pudieron eliminar los pedidos. Revisa la conexión.");
+        pedidosActuales = [];
+        renderLista();
+        await cargarPedidos(true);
+        const eliminados = Number(resultado?.eliminados || 0);
+        alert(eliminados === 1 ? "Se eliminó 1 pedido." : `Se eliminaron ${eliminados} pedidos.`);
+    } catch (error) {
+        console.error("[Qué Antojo] No se pudieron vaciar los pedidos", error);
+        alert(`No se pudieron eliminar los pedidos. ${error?.message || "Revisa la conexión."}`);
     }
 });
 

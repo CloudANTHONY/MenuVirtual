@@ -7,7 +7,7 @@
     <meta name="color-scheme" content="light">
     <title>¡Qué Antojo! | 12°B Ciencias</title>
     <link rel="preload" href="assets/logo.png" as="image">
-    <link rel="stylesheet" href="styles.css?v=20260813-2035">
+    <link rel="stylesheet" href="styles.css?v=20260813-2145">
 </head>
 <body>
     <div class="ruido"></div>
@@ -65,7 +65,7 @@
                         <span>combos</span>
                     </div>
                     <div>
-                        <strong>5</strong>
+                        <strong>6</strong>
                         <span>promos</span>
                     </div>
                 </div>
@@ -167,14 +167,14 @@
             <div class="promo-cinta" aria-hidden="true">
                 <div class="promo-cinta-pista">
                     <div class="promo-cinta-grupo">
-                        <span>Promociones válidas únicamente en el puesto</span>
-                        <span>Promociones válidas únicamente en el puesto</span>
-                        <span>Promociones válidas únicamente en el puesto</span>
+                        <span>Revisa cada promoción: algunas también aplican por delivery</span>
+                        <span>Revisa cada promoción: algunas también aplican por delivery</span>
+                        <span>Revisa cada promoción: algunas también aplican por delivery</span>
                     </div>
                     <div class="promo-cinta-grupo">
-                        <span>Promociones válidas únicamente en el puesto</span>
-                        <span>Promociones válidas únicamente en el puesto</span>
-                        <span>Promociones válidas únicamente en el puesto</span>
+                        <span>Revisa cada promoción: algunas también aplican por delivery</span>
+                        <span>Revisa cada promoción: algunas también aplican por delivery</span>
+                        <span>Revisa cada promoción: algunas también aplican por delivery</span>
                     </div>
                 </div>
             </div>
@@ -218,7 +218,7 @@
                         </div>
                         <div>
                             <span>Promos</span>
-                            <strong>5</strong>
+                            <strong>6</strong>
                         </div>
                         <div>
                             <span>Precio desde</span>
@@ -277,6 +277,12 @@
                 <p id="deliverySubtitulo">Dinos dónde estás y qué quieres pedir.</p>
             </div>
 
+            <div class="delivery-pausa" id="deliveryPausa" hidden>
+                <span>Pedidos pausados</span>
+                <strong>No estamos aceptando pedido actualmente.</strong>
+                <p>El staff reabrirá el delivery cuando pueda recibir nuevos pedidos. Puedes volver a intentarlo en unos minutos.</p>
+            </div>
+
             <form class="delivery-formulario" id="deliveryFormulario">
                 <div class="delivery-aviso">
                     <span>●</span>
@@ -315,6 +321,20 @@
                     </div>
 
                     <div class="delivery-productos" id="deliveryProductos"></div>
+
+                    <div class="delivery-costos">
+                        <div><span>Subtotal de comida</span><strong id="deliverySubtotal">$0.00</strong></div>
+                        <div><span>Costo de delivery</span><strong id="deliveryTarifa">$0.00</strong></div>
+                        <div class="delivery-costos-total"><span>Total estimado</span><strong id="deliveryTotalDetalle">$0.00</strong></div>
+                        <p>El delivery baja según el tamaño del pedido: $1.25 en pedidos menores de $3, $1.00 desde $3, $0.75 desde $5 y $0.50 desde $7.</p>
+                    </div>
+                </div>
+
+                <div class="delivery-promos-info">
+                    <strong>Promociones disponibles al entregar</strong>
+                    <p><b>Panfleto:</b> muéstralo al repartidor y obtén 5% de descuento.</p>
+                    <p><b>¿Te la sabes?:</b> dile al repartidor que quieres intentarlo. Fácil 5%, media 10% y difícil 15%.</p>
+                    <small>El descuento se valida antes del pago y se aplica al subtotal de comida, no al costo de delivery. No se acumulan promociones.</small>
                 </div>
 
                 <fieldset class="delivery-pago">
@@ -334,10 +354,15 @@
                         <span class="delivery-pago-icono">Y</span>
                         <span>
                             <strong>Yappy</strong>
-                            <small>Ten listo el comprobante</small>
+                            <small>6537-4834 · paga cuando llegue el repartidor</small>
                         </span>
                     </label>
                 </fieldset>
+
+                <div class="delivery-yappy-regla" id="deliveryYappyRegla" hidden>
+                    <strong>Yappy: 6537-4834</strong>
+                    <p>No envíes el pago todavía. Espera a que llegue el personal con tu pedido; allí verificaremos promociones, el total final y que la transacción sea exitosa.</p>
+                </div>
 
                 <button class="boton delivery-enviar" id="deliveryEnviar" type="submit">
                     Enviar pedido
@@ -365,6 +390,18 @@
                 <div class="seguimiento-conexion" id="seguimientoConexion">
                     <span></span>
                     <strong>Conectando con el puesto…</strong>
+                </div>
+
+                <div class="seguimiento-pago-aviso" id="seguimientoPagoAviso" hidden></div>
+
+                <div class="seguimiento-promo-recordatorio">
+                    <strong>¿Quieres intentar la promo de preguntas?</strong>
+                    <p>Díselo al repartidor cuando llegue. En delivery: fácil 5%, media 10% y difícil 15%. Si tienes el panfleto físico también puedes mostrarlo para solicitar el 5%.</p>
+                </div>
+
+                <div class="seguimiento-reclamo">
+                    <strong>Guarda tu número de pedido.</strong>
+                    <p>En caso de reclamo necesitarás este código. Si pagas con Yappy, guarda también el número o comprobante de la transacción.</p>
                 </div>
 
                 <div class="seguimiento-ruta" id="seguimientoRuta"></div>
@@ -405,9 +442,9 @@
     </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
-    <script src="supabase-config.js?v=20260813-2035"></script>
-    <script src="productos.js?v=20260813-2035"></script>
-    <script src="pedidos-store.js?v=20260813-2035"></script>
-    <script src="script.js?v=20260813-2035"></script>
+    <script src="supabase-config.js?v=20260813-2145"></script>
+    <script src="productos.js?v=20260813-2145"></script>
+    <script src="pedidos-store.js?v=20260813-2145"></script>
+    <script src="script.js?v=20260813-2145"></script>
 </body>
 </html>

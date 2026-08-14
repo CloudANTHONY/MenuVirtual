@@ -83,6 +83,7 @@ const PedidosStore = (() => {
 
     const normalizar = (fila, cache = false) => {
         if (!fila) return null;
+        const total = Number(fila.total || 0);
         const pedido = {
             id: fila.codigo,
             nombre: fila.nombre,
@@ -91,7 +92,12 @@ const PedidosStore = (() => {
             nota: fila.nota || "",
             pago: fila.pago,
             items: Array.isArray(fila.items) ? fila.items : [],
-            total: Number(fila.total || 0),
+            subtotal: Number(fila.subtotal ?? total),
+            deliveryFee: Number(fila.delivery_fee || 0),
+            descuentoTipo: fila.descuento_tipo || "ninguno",
+            descuentoPct: Number(fila.descuento_pct || 0),
+            descuento: Number(fila.descuento || 0),
+            total,
             estado: fila.estado,
             repartidor: fila.repartidor || "",
             creadoEn: fila.creado_en,
@@ -161,7 +167,7 @@ const PedidosStore = (() => {
         }));
 
         const respuesta = await ejecutarConReintentos(async () => {
-            const { data, error } = await api.rpc("crear_pedido", {
+            const { data, error } = await api.rpc("crear_pedido_v4", {
                 p_codigo: codigo,
                 p_token: token,
                 p_nombre: datos.nombre,
@@ -187,7 +193,7 @@ const PedidosStore = (() => {
         const api = supabase();
 
         return ejecutar(async () => {
-            const { data, error } = await api.rpc("ver_pedido", {
+            const { data, error } = await api.rpc("ver_pedido_v4", {
                 p_codigo: codigo,
                 p_token: token
             });
@@ -212,11 +218,12 @@ const PedidosStore = (() => {
         const api = supabase();
         const token = requiereStaff();
         return ejecutar(async () => {
-            const { data, error } = await api.rpc("staff_listar_pedidos", {
+            const { data, error } = await api.rpc("staff_listar_pedidos_v4", {
                 p_staff_token: token
             });
             if (error) throw error;
-            return (data || []).map(fila => normalizar(fila, false));
+            const lista = Array.isArray(data) ? data : [];
+            return lista.map(fila => normalizar(fila, false));
         });
     };
 
@@ -240,12 +247,12 @@ const PedidosStore = (() => {
         if (nombre.length < 2) throw new Error("Escribe el nombre del repartidor");
 
         return ejecutar(async () => {
-            const { data, error } = await api.rpc("staff_tomar_pedido_v2", {
+            const { data, error } = await api.rpc("staff_tomar_pedido_v4", {
                 p_staff_token: token,
                 p_codigo: codigo,
                 p_repartidor: nombre
             });
-            if (error) throw errorRpc("staff_tomar_pedido_v2", error);
+            if (error) throw errorRpc("staff_tomar_pedido_v4", error);
             return normalizar(filas(data)[0] || null, false);
         });
     };
@@ -256,12 +263,12 @@ const PedidosStore = (() => {
         const nuevoEstado = String(estado || "").trim();
 
         return ejecutar(async () => {
-            const { data, error } = await api.rpc("staff_cambiar_estado_pedido_v2", {
+            const { data, error } = await api.rpc("staff_cambiar_estado_pedido_v4", {
                 p_staff_token: token,
                 p_codigo: codigo,
                 p_estado: nuevoEstado
             });
-            if (error) throw errorRpc("staff_cambiar_estado_pedido_v2", error);
+            if (error) throw errorRpc("staff_cambiar_estado_pedido_v4", error);
             return normalizar(filas(data)[0] || null, false);
         });
     };
@@ -277,11 +284,27 @@ const PedidosStore = (() => {
         const api = supabase();
         const token = requiereStaff();
         return ejecutar(async () => {
-            const { data, error } = await api.rpc("staff_limpiar_pedidos", {
+            const { data, error } = await api.rpc("staff_limpiar_pedidos_v4", {
                 p_staff_token: token
             });
-            if (error) throw error;
-            return data === true;
+            if (error) throw errorRpc("staff_limpiar_pedidos_v4", error);
+            return data || { ok: true, eliminados: 0 };
+        });
+    };
+
+    const aplicarDescuento = async (codigo, tipo) => {
+        const api = supabase();
+        const token = requiereStaff();
+        const descuento = String(tipo || "ninguno").trim();
+
+        return ejecutar(async () => {
+            const { data, error } = await api.rpc("staff_aplicar_descuento_v4", {
+                p_staff_token: token,
+                p_codigo: codigo,
+                p_tipo: descuento
+            });
+            if (error) throw errorRpc("staff_aplicar_descuento_v4", error);
+            return normalizar(data || null, false);
         });
     };
 
@@ -381,6 +404,7 @@ const PedidosStore = (() => {
         actualizar,
         tomarPedido,
         cambiarEstadoPedido,
+        aplicarDescuento,
         limpiar,
         olvidar,
         deliveryActivo,

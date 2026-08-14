@@ -740,3 +740,101 @@
     font-weight: 900;
     text-decoration: none;
 }
+
+.staff-total-detallado {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 18px;
+}
+
+.staff-total-detallado > div {
+    min-width: 0;
+}
+
+.staff-total-detallado .staff-total-final {
+    grid-column: 1 / -1;
+    padding-top: 11px;
+    border-top: 1px solid rgba(23, 17, 12, 0.1);
+    text-align: right;
+}
+
+.staff-total-detallado .staff-total-final strong {
+    font-size: 1.45rem;
+}
+
+.staff-yappy {
+    margin-top: 16px;
+    padding: 15px 16px;
+    border-radius: 16px;
+    color: #123b50;
+    background: #dff4ff;
+}
+
+.staff-yappy strong {
+    font-size: 0.9rem;
+}
+
+.staff-yappy p {
+    margin-top: 5px;
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.staff-promos-delivery,
+.staff-promo-aplicada {
+    margin-top: 22px;
+    padding: 15px;
+    border: 1px solid #ead79a;
+    border-radius: 16px;
+    background: #fff8dc;
+}
+
+.staff-promos-delivery > span,
+.staff-promo-aplicada > span {
+    color: #806b1c;
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.staff-promos-delivery > p {
+    margin-top: 6px;
+    color: #6b604f;
+    font-size: 0.72rem;
+    line-height: 1.45;
+}
+
+.staff-promos-delivery > div {
+    margin-top: 11px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.staff-promos-delivery button {
+    min-height: 42px;
+    padding: 8px 9px;
+    border-radius: 12px;
+    color: #5b4a0d;
+    background: #f2e7b9;
+    font-size: 0.68rem;
+    font-weight: 900;
+}
+
+.staff-promos-delivery button.activo {
+    color: #17110c;
+    background: #ffd51f;
+    box-shadow: inset 0 0 0 1px rgba(23, 17, 12, 0.16);
+}
+
+.staff-promos-delivery button:disabled {
+    opacity: 0.35;
+}
+
+.staff-promo-aplicada strong {
+    display: block;
+    margin-top: 5px;
+    color: #17110c;
+    font-size: 0.9rem;
+}
