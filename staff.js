@@ -21,6 +21,8 @@ let cargandoPedidos = false;
 let cancelarSuscripcion = null;
 let deliveryActivoActual = null;
 let accionEnCurso = false;
+let firmaDetalleActual = "";
+const borradoresRepartidor = new Map();
 
 const formatoPrecio = valor => `$${Number(valor || 0).toFixed(2)}`;
 const estadoNombre = estado => PedidosStore.estados.find(item => item.id === estado)?.nombre || (estado === "cancelado" ? "Cancelado" : estado);
@@ -46,6 +48,16 @@ const renderContadores = pedidos => {
     contadorActivos.textContent = pedidos.filter(pedido => !esFinal(pedido.estado) && pedido.estado !== "pendiente").length;
     contadorFinalizados.textContent = pedidos.filter(pedido => esFinal(pedido.estado)).length;
 };
+
+const firmaPedido = pedido => pedido ? JSON.stringify({
+    id: pedido.id,
+    estado: pedido.estado,
+    repartidor: pedido.repartidor,
+    nota: pedido.nota,
+    pago: pedido.pago,
+    total: pedido.total,
+    actualizadoEn: pedido.actualizadoEn
+}) : "";
 
 const renderLista = (actualizarDetalle = true) => {
     renderContadores(pedidosActuales);
@@ -84,13 +96,16 @@ const renderDetalle = () => {
     const pedido = pedidosActuales.find(item => item.id === pedidoSeleccionado) || null;
     if (!pedido) {
         pedidoSeleccionado = "";
+        firmaDetalleActual = "";
         staffDetalle.innerHTML = `<div class="staff-vacio"><span>↗</span><h2>Selecciona un pedido</h2><p>Aquí podrás asignar repartidor y actualizar el estado.</p></div>`;
         return;
     }
 
+    firmaDetalleActual = firmaPedido(pedido);
+
     const bloqueAsignacion = pedido.repartidor
         ? `<div class="staff-repartidor-asignado"><span>Repartidor</span><strong>${escapar(pedido.repartidor)}</strong></div>`
-        : `<form class="staff-repartidor-form" id="staffRepartidorForm"><label><span>Repartidor</span><input id="staffRepartidor" type="text" maxlength="50" required placeholder="Nombre de quien entregará"></label><button type="submit">Tomar pedido</button></form>`;
+        : `<form class="staff-repartidor-form" id="staffRepartidorForm"><label><span>Repartidor</span><input id="staffRepartidor" type="text" maxlength="50" required autocomplete="off" placeholder="Nombre de quien entregará"></label><button type="submit">Tomar pedido</button></form>`;
 
     const estados = PedidosStore.estados.filter(estado => estado.id !== "pendiente");
     const controles = esFinal(pedido.estado) ? "" : `
@@ -131,6 +146,14 @@ const renderDetalle = () => {
     `;
 
     const formulario = document.getElementById("staffRepartidorForm");
+    if (formulario) {
+        const inputRepartidor = document.getElementById("staffRepartidor");
+        const borrador = borradoresRepartidor.get(pedido.id) || "";
+        if (borrador) inputRepartidor.value = borrador;
+        inputRepartidor.addEventListener("input", () => {
+            borradoresRepartidor.set(pedido.id, inputRepartidor.value);
+        });
+    }
     if (formulario) formulario.addEventListener("submit", async evento => {
         evento.preventDefault();
         const nombre = document.getElementById("staffRepartidor").value.trim();
@@ -141,6 +164,7 @@ const renderDetalle = () => {
         accionEnCurso = true;
         try {
             await PedidosStore.tomarPedido(pedido.id, nombre);
+            borradoresRepartidor.delete(pedido.id);
             await cargarPedidos(true);
         } catch (error) {
             console.error("[Qué Antojo] No se pudo tomar el pedido", error);
@@ -187,10 +211,33 @@ const cargarPedidos = async (forzarDetalle = false) => {
     if (cargandoPedidos) return;
     cargandoPedidos = true;
     try {
-        const editandoRepartidor = document.activeElement?.id === "staffRepartidor";
         pedidosActuales = await PedidosStore.listar();
         mostrarConexion(true);
-        renderLista(forzarDetalle || (!editandoRepartidor && !accionEnCurso));
+        renderLista(false);
+
+        const pedido = pedidosActuales.find(item => item.id === pedidoSeleccionado) || null;
+        const inputRepartidor = document.getElementById("staffRepartidor");
+        const editandoRepartidor = Boolean(
+            inputRepartidor &&
+            pedido &&
+            !pedido.repartidor &&
+            pedido.estado === "pendiente"
+        );
+
+        if (forzarDetalle) {
+            renderDetalle();
+            return;
+        }
+
+        if (!pedido) {
+            renderDetalle();
+            return;
+        }
+
+        if (editandoRepartidor || accionEnCurso) return;
+
+        const nuevaFirma = firmaPedido(pedido);
+        if (nuevaFirma !== firmaDetalleActual) renderDetalle();
     } catch (error) {
         mostrarConexion(false);
         if (String(error?.message || "").includes("STAFF_NO_AUTORIZADO")) cerrarPanel();
